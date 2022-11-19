@@ -7,6 +7,6 @@ namespace LR_C_sharp
     interface IDateAndCopy
     {
         object DeepCopy();
-        DateTime Date { get; set; }
+        /*DateTime Date { get; set; }*/
     }
 }

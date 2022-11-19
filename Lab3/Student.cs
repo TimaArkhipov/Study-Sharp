@@ -81,6 +81,15 @@ namespace LR_C_sharp.Lab3
             }
         }
 
+        //public ref Person basePerson
+        //{
+        //    get
+        //    {
+        //        return ref Person;
+        //    }
+
+        //}
+
         public bool this[Education edu]
         {
             get
@@ -223,7 +232,9 @@ namespace LR_C_sharp.Lab3
             return base.ToString() + '\n' +
                 "Форма обучения: " + EduToString() + '\n' +
                 "Номер группы: " + NumberOfGroup + '\n' +
-                "Средний балл: " + AverageGrade;
+                "Средний балл: " + AverageGrade + '\n' +
+                "Число зачётов: " + Tests.Count + '\n' +
+                "Число экзаменов: " + Exams.Count + '\n';
         }
 
         public string EduToString()
@@ -243,8 +254,103 @@ namespace LR_C_sharp.Lab3
             return new Student(this);
         }
 
+        public void sortExams(int mode)
+        {
+            List<Exam> examsTemp = Exams;
+            switch (mode)
+            {
+                case 0: //Название предмета
+                    for (int i = 0; i < examsTemp.Count; i++)
+                    {
+                        if (examsTemp.ElementAt(i).CompareTo(examsTemp.ElementAt(i + 1)) > 0)
+                        {
+                            (examsTemp[i + 1], examsTemp[i]) = (examsTemp[i], examsTemp[i + 1]);
+                        }
+                    }
+                    break;
+                case 1: // Оценка
+                    for (int i = 0; i < examsTemp.Count; i++)
+                    {
+                        if ((new Exam()).Compare(examsTemp.ElementAt(i), examsTemp.ElementAt(i + 1)) > 0)
+                        {
+                            (examsTemp[i + 1], examsTemp[i]) = (examsTemp[i], examsTemp[i + 1]);
+                        }
+                    }
+                    break;
+                case 2: // Дата
+                    examsTemp.Sort(new ExamDateComparer());
+                    break;
+                default:
+                    throw new Exception("Неверный режим сортировки");
+            }
+            Exams = examsTemp;
+        }
+
         static void Main(string[] args)
         {
+            // Подготовка
+            Exam exCpp = new Exam("C++", 5, new DateTime(2021, 1, 20));
+            Exam exPy = new Exam("Python", 4, new DateTime(2020, 5, 10));
+            Exam exPhp = new Exam("PHP", 3, new DateTime(2020, 3, 27));
+            Exam exBd = new Exam("Базы данных", 3, new DateTime(2021, 12, 12));
+            Exam exOs = new Exam("ОСиС", 4, new DateTime(2021, 9, 15));
+            Exam exJava = new Exam("Java", 3, new DateTime(2020, 7, 14));
+            List<Exam> examList = new List<Exam>() { exCpp, exPy, exPhp, exBd, exOs, exJava };
+            List<Exam> examList1 = new List<Exam>() { exCpp, exPhp, exBd, exJava };
+            List<Exam> examList2 = new List<Exam>() { exPy, exOs, exJava };
+
+            List<Student> students = new List<Student>();
+            students.Add(new Student()
+            {
+                Name = "Андрей",
+                Surname = "Карпов",
+                BirthDate = new DateTime(1000, 1, 1),
+                Education = Education.SecondEducation,
+                NumberOfGroup = 166
+            });
+            students.Add(new Student()
+            {
+                Name = "Сергей",
+                Surname = "Лопанцов",
+                BirthDate = new DateTime(2000, 12, 26),
+                Education = Education.Specialist,
+                NumberOfGroup = 178
+            });
+            students.Add(new Student()
+            {
+                Name = "Имя",
+                Surname = "Фамилия",
+                BirthDate = new DateTime(1998, 7, 10),
+                Education = Education.Bachelor,
+                NumberOfGroup = 202
+            });
+
+            students[0].Exams = examList;
+            students[1].Exams = examList1;
+            students[2].Exams = examList2;
+
+            // Подготовка
+
+            // 1
+            StudentCollection sc = new StudentCollection();
+            sc.AddStudents(students[0], students[1], students[2]);
+
+            // 2
+            // 2
+
+            // 3
+            Console.WriteLine("Максимальное значение среднего " +
+                "балла для элементов списка: {0}\n", 
+                sc.MaxAverageGrade.ToString());
+            Console.WriteLine("Студенты с формой обучения " +
+                "Education.Specialist: {0}\n",
+                sc.SubsetSpec);
+            // c - нет пока
+            // 3
+            
+            // 4
+            TestCollections tc = new TestCollections(4);
+            // 4
         }
     }
 }

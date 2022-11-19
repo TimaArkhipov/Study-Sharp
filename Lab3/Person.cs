@@ -15,16 +15,16 @@ namespace LR_C_sharp.Lab3
 
         public Person(string name, string surname, DateTime birthDate)
         {
-            this.name = name;
-            this.surname = surname;
-            this.birthDate = birthDate;
+            Name = name;
+            Surname = surname;
+            BirthDate = birthDate;
         }
 
         public string Surname { get => surname; set => surname = value; }
         public string Name { get => name; set => name = value; }
         public DateTime BirthDate { get => birthDate; set => birthDate = value; }
 
-        public DateTime Date { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        //public DateTime Date { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         // ? как реализовать этот метод интерфейса?
 
         public int GetBirthYear()
@@ -80,7 +80,7 @@ namespace LR_C_sharp.Lab3
                    p1.GetHashCode() == p2.GetHashCode();
         }
 
-        public int Compare(Person x, Person y)
+        public int Compare(Person? x, Person? y)
         {
             if (x != null && y != null)
                 return x.BirthDate.CompareTo(y.BirthDate);
@@ -92,12 +92,23 @@ namespace LR_C_sharp.Lab3
                 throw new ArgumentNullException("Оба аргумента сравнения = null");
         }
 
-        public int CompareTo(Person obj)
+        public int CompareTo(object? obj)
         {
-            if (obj != null)
-                return this.Surname.CompareTo(obj.Surname);
+            if ((new Person()).GetType() == obj.GetType())
+            {
+                Person person = (Person)obj;
+                if (!obj.Equals(null))
+                    return Surname.CompareTo(person.Surname);
+                else
+                    throw new ArgumentNullException("Аргумент сравнения = null");
+            }
             else
-                throw new ArgumentNullException("Аргумент сравнения = null");
+                throw new ArgumentException("Тип аргумента не Person");
         }
+
+        /*        public int CompareTo(object? obj)
+                {
+                    throw new NotImplementedException();
+                }*/
     }
 }

@@ -12,7 +12,7 @@ public enum Education
 
 namespace LR_C_sharp.Lab2
 {
-    class Student : Person, IDateAndCopy
+    class Student : Person, IDateAndCopy, IEnumerable
     {
         private Education education;
         private int numberOfGroup;
@@ -87,6 +87,16 @@ namespace LR_C_sharp.Lab2
             }
         }
 
+        public ref Person basePerson
+        {
+            get
+            {
+                var d = new Person();
+                return ref d;
+            }
+
+        }
+
         public bool this[Education edu]
         {
             get
@@ -98,17 +108,6 @@ namespace LR_C_sharp.Lab2
             }
         }
 
-/*        public object this[int i]
-        {
-            get
-            { 
-                ArrayList testExamList = new ArrayList(TestList);
-                for (int j = 0; j < PassedExams.Count; j++)
-                    testExamList.Add(PassedExams[j]);
-                return testExamList[i];
-            }    
-        }*/
-
         public IEnumerable<Exam> GetHigher(int grade)
         {
             foreach (Exam item in PassedExams)
@@ -118,65 +117,64 @@ namespace LR_C_sharp.Lab2
             }
         }
 
-        // Доп.задание №1
-        // Смог сделать без реализации Student Enumerator
+        // Задание №6
         public IEnumerable<Object> ExamsAndTests()
         {
-
             ArrayList testExamList = new ArrayList(TestList);
-            foreach (var item in PassedExams)
-                testExamList.Add(item);
+            testExamList.AddRange(PassedExams);
             foreach (var item in testExamList)
             {
                 yield return item;
             }
+        }
+        // Задание №6
+
+        /// Доп.задание №1
+        public IEnumerator GetEnumerator()
+        {
+            return new StudentEnumerator(PassedExams, TestList);
         }
         // Доп.задание №1
 
         // Доп.задание №2
         public IEnumerable<Object> PassedExamsAndTests()
         {
-            ArrayList testExamList = new ArrayList();
-            foreach (var item in TestList)
+            ArrayList testExamList = new ArrayList(TestList);
+            testExamList.AddRange(PassedExams);
+            for (int i = 0; i < testExamList.Count; i++)
             {
-                if (((Test)item).Passed == true)
-                    testExamList.Add(item);
-            }
-            foreach (var item in PassedExams)
-            {
-                if (((Exam)item).Grade > 2)
-                    testExamList.Add(item);
-            }
-            foreach (var item in testExamList)
-            {
-                yield return item;
+                if (i < TestList.Count)
+                {
+                    Test t = testExamList[i] as Test;
+                    if (t.Passed)
+                        yield return t;
+                } 
+                else
+                {
+                    Exam e = testExamList[i] as Exam;
+                    if (e.Grade > 2)
+                        yield return e;
+                }
             }
         }
         // Доп.задание №2
 
         // Доп.задание №3
-        public IEnumerable<Object> PassedTestsOnSubject()
+        public IEnumerable<Test> PassedTestsOnSubject()
         {
-            ArrayList testExamList = new ArrayList();
             foreach (var item in TestList)
             {
-                if (((Test)item).Passed == true)
+                foreach (var jtem in PassedExams)
                 {
-                    foreach (var jtem in PassedExams)
+                    Test t = item as Test;
+                    Exam e = jtem as Exam;
+                    if (t.NameOfSubject == e.NameOfSubject &&
+                        t.Passed == true &&
+                        e.Grade > 2)
                     {
-                        if (((Exam)jtem).NameOfSubject == ((Test)item).NameOfSubject)
-                        {
-                            if (((Exam)jtem).Grade > 2)
-                            {
-                                testExamList.Add(item);
-                            }
-                        }
+                        yield return t;
                     }
                 }
-            }
-            foreach (var item in testExamList)
-            {
-                yield return item;
             }
         }
         // Доп.задание №3
@@ -207,7 +205,7 @@ namespace LR_C_sharp.Lab2
 
         public override string ToString()
         {
-            string tests = TestsToString(), 
+            string tests = TestsToString(),
                 exams = ExamsToString();
             if (tests.Equals(""))
                 tests = "-";
@@ -245,98 +243,134 @@ namespace LR_C_sharp.Lab2
             return new Student(this);
         }
 
-        static void Main(string[] args)
+        public static bool operator ==(Student s1, Student s2)
         {
-            // 1
-            // Хэш-коды одинаковые для двух одинаковых объектов(для их ссылок тоже), не знаю как исправить
-            Person VR = new Person("Владимир", "Рулёв", new DateTime(2000, 1, 1));
-            Person VRc = new Person("Владимир", "Рулёв", new DateTime(2000, 1, 1));
-            //Person VRcopy = (Person)VR.DeepCopy();
-            //ref Person f = ref VR;
-            //ref Person f1 = ref VR;
-            //Console.WriteLine("оригинал {0}\nЕго хэш-код: {1}\n", f.ToString(), f.GetHashCode());
-            //Console.WriteLine("копия {0}\nЕго хэш-код: {1}\n", f1.ToString(), f1.GetHashCode());
-            Console.WriteLine("Оригинал {0}\nЕго хэш-код: {1}\n", VR.ToString(), VR.GetHashCode().ToString());
-            Console.WriteLine("Копия {0}\nЕго хэш-код: {1}\n", VRc.ToString(), VRc.GetHashCode().ToString()); 
-            // 1
-
-            // 2
-            Exam exCpp = new Exam("C++", 5, new DateTime(2021, 1, 20));
-            Exam exPy = new Exam("Python", 4, new DateTime(2020, 5, 10));
-            Exam exPhp = new Exam("PHP", 3, new DateTime(2020, 3, 27));
-            Exam exBd = new Exam("Базы данных", 3, new DateTime(2021, 12, 12));
-            Exam exOs = new Exam("ОСиС", 4, new DateTime(2021, 9, 15));
-            Exam exJava = new Exam("Java", 3, new DateTime(2020, 7, 14));
-            ArrayList examList = new ArrayList() { exCpp, exPy, exPhp, exBd, exOs, exJava };
-            Student stVR = new Student(VR, Education.Specialist, 154)
-            {
-                PassedExams = examList
-            };
-            Console.WriteLine(stVR.ToString());
-            // 2
-
-            // 3
-            Console.WriteLine(stVR.Person.ToString());
-            // 3
-
-            // 4
-            Student studentCopy = (Student)stVR.DeepCopy();
-            stVR.Name = "Олег";
-            Console.WriteLine("\nИзменённый оригинал{0}\n", stVR.ToShortString());
-            Console.WriteLine("Копия{0}\n", studentCopy.ToShortString());
-            // 4
-
-            // 5
-            try
-            {
-                studentCopy.NumberOfGroup = -3;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            // 5
-
-            // 6
-            Console.WriteLine("\n___________________________________________\nСписок всех экзаменов и зачётов:");
-            studentCopy.TestList = new ArrayList() { new Test("C++", true), new Test("Java", false) };
-            foreach (var item in studentCopy.ExamsAndTests())
-            {
-                Console.WriteLine(item.ToString());
-            }
-            // 6
-
-            // 7
-            int n = 3;
-            Console.WriteLine("\n___________________________________________\nЭкзамены выше {0}:", n);
-            foreach (var item in studentCopy.GetHigher(n))
-            {
-                Console.WriteLine(item.ToString());
-            }
-            // 7
-
-            // Доп.задание №1
-            // Не реализовано
-            /*            foreach (var item in studentCopy)
-                        {
-                        }*/
-            // Доп.задание №1
-
-            // Доп.задание №2
-            Console.WriteLine("\n___________________________________________\nВсе сданные экзамены и зачёты:");
-            foreach (var item in studentCopy.PassedExamsAndTests())
-            {
-                Console.WriteLine(item);
-            }
-            // Доп.задание №2
-
-            // Доп.задание №3
-            Console.WriteLine("\n___________________________________________\nСданные зачёты, для которых сдан экзамен:");
-            foreach (var item in studentCopy.PassedTestsOnSubject())
-            {
-                Console.WriteLine(item);
-            }
-            // Доп.задание №3
+            return s1.Education == s2.Education &&
+                s1.TestList == s2.TestList &&
+                s1.PassedExams == s2.PassedExams;
         }
+
+        public static bool operator !=(Student s1, Student s2)
+        {
+            return s1.Education != s2.Education ||
+                s1.TestList != s2.TestList ||
+                s1.PassedExams != s2.PassedExams;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                Student p = (Student)obj;
+                return this == p;
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(base.GetHashCode(), Education,
+                NumberOfGroup, TestList, PassedExams);
+        }
+
+        //static void Main(string[] args)
+        //{
+        //    // 1
+        //    // Хэш-коды одинаковые для двух одинаковых объектов(для их ссылок тоже), не знаю как исправить
+        //    Person VR = new Person("Владимир", "Рулёв", new DateTime(2000, 1, 1));
+        //    //Person VRc = new Person("Владимир", "Рулёв", new DateTime(2000, 1, 1));
+        //    Person VRc = (Person)VR.DeepCopy();
+        //    //ref Person f = ref VR;
+        //    //ref Person f1 = ref VRc;
+        //    bool g = object.ReferenceEquals(VR, VRc);
+        //    Console.WriteLine("Ссылки равны? - {0}\n", g ? "Да" : "Нет");
+        //    Console.WriteLine("Оригинал {0}\nЕго хэш-код: {1}\n", VR.ToString(), VR.GetHashCode().ToString());
+        //    Console.WriteLine("Копия {0}\nЕго хэш-код: {1}\n", VRc.ToString(), VRc.GetHashCode().ToString());
+        //    // 1
+
+        //    // 2
+        //    Exam exCpp = new Exam("C++", 5, new DateTime(2021, 1, 20));
+        //    Exam exPy = new Exam("Python", 4, new DateTime(2020, 5, 10));
+        //    Exam exPhp = new Exam("PHP", 3, new DateTime(2020, 3, 27));
+        //    Exam exBd = new Exam("Базы данных", 3, new DateTime(2021, 12, 12));
+        //    Exam exOs = new Exam("ОСиС", 4, new DateTime(2021, 9, 15));
+        //    Exam exJava = new Exam("Java", 3, new DateTime(2020, 7, 14));
+        //    ArrayList examList = new ArrayList() { exCpp, exPy, exPhp, exBd, exOs, exJava };
+        //    Student stVR = new Student(VR, Education.Specialist, 154)
+        //    {
+        //        PassedExams = examList
+        //    };
+        //    Console.WriteLine(stVR.ToString());
+        //    // 2
+
+        //    // 3
+        //    Console.WriteLine(stVR.Person.ToString());
+        //    // 3
+
+        //    // 4
+        //    Student studentCopy = (Student)stVR.DeepCopy();
+        //    stVR.Name = "Олег";
+        //    Console.WriteLine("\nИзменённый оригинал{0}\n", stVR.ToShortString());
+        //    Console.WriteLine("Копия{0}\n", studentCopy.ToShortString());
+        //    // 4
+
+        //    // 5
+        //    try
+        //    {
+        //        studentCopy.NumberOfGroup = -3;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Console.WriteLine(e.Message);
+        //    }
+        //    // 5
+
+        //    // 6
+        //    Console.WriteLine("\n___________________________________________\nСписок всех экзаменов и зачётов:");
+        //    studentCopy.TestList = new ArrayList() { new Test("C++", true), new Test("Java", false) };
+        //    foreach (var item in studentCopy.ExamsAndTests())
+        //    {
+        //        Console.WriteLine(item.ToString());
+        //    }
+        //    // 6
+
+        //    // 7
+        //    int n = 3;
+        //    Console.WriteLine("\n___________________________________________\nЭкзамены выше {0}:", n);
+        //    foreach (var item in studentCopy.GetHigher(n))
+        //    {
+        //        Console.WriteLine(item.ToString());
+        //    }
+        //    // 7
+
+        //    // Доп.задание №1
+        //    //IEnumerator se = studentCopy.GetEnumerator();
+        //    Console.WriteLine("\n___________________________________________\nПредметы есть как в списке экзаменов так и зачётов:");
+        //    foreach (var item in studentCopy)
+        //    {
+        //        Console.WriteLine(item);
+        //    }
+        //    // Доп.задание №1
+
+        //    // Доп.задание №2
+        //    Console.WriteLine("\n___________________________________________\nВсе сданные экзамены и зачёты:");
+        //    foreach (var item in studentCopy.PassedExamsAndTests())
+        //    {
+        //        Console.WriteLine(item);
+        //    }
+        //    // Доп.задание №2
+
+        //    // Доп.задание №3
+        //    Console.WriteLine("\n___________________________________________\nСданные зачёты, для которых сдан экзамен:");
+        //    foreach (var item in studentCopy.PassedTestsOnSubject())
+        //    {
+        //        Console.WriteLine(item);
+        //    }
+        //    // Доп.задание №3
+        //}
+
     }
 }

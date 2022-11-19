@@ -22,8 +22,6 @@ namespace LR_C_sharp.Lab2
         public string Surname { get => surname; set => surname = value; }
         public string Name { get => name; set => name = value; }
         public DateTime BirthDate { get => birthDate; set => birthDate = value; }
-        public DateTime Date { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        // ? как реализовать этот метод интерфейса?
 
         public int GetBirthYear()
         {
@@ -46,10 +44,19 @@ namespace LR_C_sharp.Lab2
 
         public override bool Equals(object obj)
         {
-            return obj is Person person &&
-                   Surname == person.Surname &&
-                   Name == person.Name &&
-                   BirthDate == person.BirthDate;
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                Person p = (Person)obj;
+                return this == p;
+            }
+            //return obj is Person person &&
+            //       Surname == person.Surname &&
+            //       Name == person.Name &&
+            //       BirthDate == person.BirthDate;
         }
 
         public override int GetHashCode()
